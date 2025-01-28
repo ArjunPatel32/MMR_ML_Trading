@@ -1,4 +1,4 @@
-from sklearn.model_selection import TimeSeriesSplit, GridSearchCV
+from sklearn.model_selection import TimeSeriesSplit, GridSearchCV, train_test_split
 from sklearn.ensemble import RandomForestClassifier
 
 def train_strategy_chooser(features, label):
