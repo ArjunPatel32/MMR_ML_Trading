@@ -1,41 +1,46 @@
 # computing.py
 
-def compute_moving_averages(ratio, short_window=5, long_window=20):
-    """
-    Compute short and long moving averages of the ratio, and rolling std.
-    Returns ratios_mavg_short, ratios_mavg_long, std_long
-    """
-    mavg_short = ratio.rolling(window=short_window).mean()
-    mavg_long = ratio.rolling(window=long_window).mean()
-    std_long = ratio.rolling(window=long_window).std()
-    return mavg_short, mavg_long, std_long
+import pandas as pd
+import numpy as np
 
-def compute_zscore(ratio, short_window=5, long_window=20):
+def compute_momentum(data, window=126):
     """
-    Compute z-score of short-window ratio vs. long-window ratio.
+    Compute momentum as the percentage change over a given window.
     """
-    mavg_short, mavg_long, std_long = compute_moving_averages(ratio, short_window, long_window)
-    zscore = (mavg_short - mavg_long) / std_long
-    return zscore
+    return data.pct_change(periods=window)
 
-def compute_spread(series1, series2, window=30):
+def compute_mean_reversion(data, short_window=5, long_window=20):
     """
-    Computes a rolling hedge ratio (beta) for series1 and series2, 
-    and returns a spread = series1 - beta*series2.
-    
-    :param series1: pd.Series of first stock's prices
-    :param series2: pd.Series of second stock's prices
-    :param window: rolling window size (in days)
-    :return: pd.Series of the dynamic spread, pd.Series of hedge ratio
+    Compute mean reversion signals using z-scores.
     """
-    # Calculate rolling covariance and variance
-    rolling_cov = series1.rolling(window).cov(series2)
-    rolling_var = series2.rolling(window).var()
+    # Calculate rolling mean and standard deviation
+    rolling_mean = data.rolling(window=long_window).mean()
+    rolling_std = data.rolling(window=long_window).std()
 
-    # Hedge ratio (beta) = Cov(A,B) / Var(B)
-    beta_series = rolling_cov / rolling_var
-    
-    # Spread = A - (beta * B)
-    dynamic_spread = series1 - (beta_series * series2)
+    # Calculate z-score
+    z_score = (data - rolling_mean) / rolling_std
+    return z_score
 
-    return dynamic_spread, beta_series
+def compute_signal_returns(data, signal_df):
+    """
+    data: price DataFrame (each column is a ticker)
+    signal_df: signal DataFrame (matching index/tickers), with values in {-1,0,1}.
+
+    Returns a Series of "portfolio daily return" for each day,
+    assuming we equally weight all tickers that have a non-zero signal.
+    """
+    # Daily returns
+    daily_returns = data.pct_change().shift(-1)  # shift(-1) so day t signal sees day t+1 return
+
+    # If signal is +1 and daily_return is r, that's +r. If -1, it's -r. If 0, it's 0.
+    # Then we can average across tickers that are "active."
+    combined = (signal_df * daily_returns)
+
+    # equal-weight average of all active signals:
+    combined['sum'] = combined.sum(axis=1)
+    combined['count'] = (signal_df != 0).sum(axis=1).replace(0, np.nan)
+    combined['strategy_return'] = combined['sum'] / combined['count']
+
+    # That gives a daily strategy return for each day.
+    # per-day return:
+    return combined['strategy_return'].fillna(0.0)

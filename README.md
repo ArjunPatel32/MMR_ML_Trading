@@ -1,12 +1,9 @@
-# pairs_trading
+# Momentum and Mean Reversion Trading with ML 
 
-Trading Project by Arjun Patel
+Project by Arjun Patel
 
-#### done
-- taking historical data from dec 31 2019 - dec 31 2024 for several large companies
-- finding stocks with highest correlation and testing pairs trading with dynamic hedging
-- incorporate risk management: maximum drawdown limit and Volatility-Based Position Sizing
-- plotting against holding S&P 500 as well as buy / sell graphs
-
-#### todo: 
-- cointegration tests
+Generate momentum and mean reversion signals
+Label which one would have been better historically.
+Train a model on features to predict that label.
+At run‐time, pick the signals from the approach the model favors.
+Compare to buying and holding the S&P 500
