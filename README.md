@@ -8,3 +8,7 @@ Project by Arjun Patel
 - At run‐time, pick the signals from the approach the model favors.
 - Apply stop-loss risk management to the signals
 - Compare to holding the S&P 500 and holding an equal portfolio across all tickers.
+
+TODO:
+- implement transaction fees
+- random sample of companies in S&P
