@@ -32,14 +32,14 @@ def train_strategy_chooser(features, label):
         estimator=rf,
         param_grid=param_grid,
         cv=tscv,
-        scoring='accuracy',  # or 'f1', 'roc_auc', etc.
+        scoring='accuracy',
         n_jobs=-1
     )
 
-    # 5) Fit the grid search
+    # Fit the grid search
     grid_search.fit(X, y)
 
-    # 6) Best model & best params
+    # Best model & best params
     best_model = grid_search.best_estimator_
     print("Best Params:", grid_search.best_params_)
     print("Best CV Score:", grid_search.best_score_)
@@ -47,6 +47,10 @@ def train_strategy_chooser(features, label):
     return best_model
 
 def train_momentum_classifier(momentum, future_returns):
+    """
+    Trains a Random Forest classifier to predict the likelihood of positive future returns 
+    based on past momentum data.
+    """
     features = momentum.shift(1)
     target = (future_returns > 0).astype(int)
 

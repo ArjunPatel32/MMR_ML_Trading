@@ -2,6 +2,7 @@
 
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 def count_strategy_choices(clf, features):
     """
@@ -15,7 +16,6 @@ def count_strategy_choices(clf, features):
     predictions = clf.predict(X)
 
     # Count how many days for each
-    import numpy as np
     n_momentum = np.sum(predictions == 1)
     n_meanrev = np.sum(predictions == 0)
 
@@ -117,39 +117,15 @@ def build_trade_log(final_signals, price_data):
     trade_log_df.reset_index(drop=True, inplace=True)
     return trade_log_df
 
-def get_trades_for_stock(
-    trade_log_df,
-    final_signals,
-    price_data,
-    ticker,
-    x=5,
-    initial_capital=10000.0
-):
+def get_trades_for_stock( trade_log_df, final_signals, price_data, ticker, show_trade_count=5, initial_capital=10000.0):
     """
-    1. Filters 'trade_log_df' for a specific 'ticker', prints the total number
+    Filters 'trade_log_df' for a specific 'ticker', prints the total number
        of trades, and displays the first 'x' trades in chronological order.
-    2. Plots an equity curve showing how the strategy would have performed if
+    Plots an equity curve showing how the strategy would have performed if
        we ONLY traded this single ticker with the signals in 'final_signals'.
-    3. On the same plot, also shows a "buy & hold" line for that ticker
+    On the same plot, also shows a "buy & hold" line for that ticker
        for direct comparison.
-
-    Parameters
-    ----------
-    trade_log_df : pd.DataFrame
-        A DataFrame containing trades with columns like:
-          ['Date', 'Ticker', 'Action', 'Price', ...]
-    final_signals : pd.DataFrame
-        Signals in {-1, 0, +1}, indexed by date, columns = tickers.
-    price_data : pd.DataFrame
-        Historical price data, indexed by date, columns = tickers.
-    ticker : str
-        The ticker symbol to filter. E.g. 'MSFT'.
-    x : int
-        How many trades to display (the first x). Default is 5.
-    initial_capital : float
-        Starting capital for the single-ticker equity curve.
     """
-
 
     # Filter trade log for this ticker
     filtered = trade_log_df[trade_log_df['Ticker'] == ticker].copy()
@@ -157,15 +133,14 @@ def get_trades_for_stock(
 
     print(f"Total trades for {ticker}: {total_trades}\n")
 
-    # Show first 'x' trades
+    # Show first 'show_trade_count' trades
     if total_trades == 0:
         print(f"No trades found for {ticker}.")
     else:
-        x = min(x, total_trades)
-        subset = filtered.head(x)
-        print(f"Showing the first {x} trades for {ticker}:\n")
+        show_trade_count = min(show_trade_count, total_trades)
+        subset = filtered.head(show_trade_count)
+        print(f"Showing the first {show_trade_count} trades for {ticker}:\n")
         print(subset)
-
 
     # Build the single-ticker strategy equity curve
     # Reindex signals & price data to ensure alignment
@@ -175,19 +150,17 @@ def get_trades_for_stock(
     daily_returns = price_data[ticker].pct_change().fillna(0)
 
     # Strategy daily return = signal * daily return
-    # Shift signals by 1 day if your logic is "trade next day after signal"
+    # Shift signals by 1 day
     strategy_daily_return = ticker_signals.shift(1).fillna(0) * daily_returns
 
     # Cumulative product of returns => equity curve
     equity_curve = (1.0 + strategy_daily_return).cumprod() * initial_capital
 
-
     # Build the buy & hold equity curve
-    # Assume buy & hold from the very first available price:
+    # Assume buy & hold from first available price:
     price_series = price_data[ticker].dropna()
     if price_series.empty:
         print(f"\nNo valid price data found for {ticker}, cannot plot buy & hold.")
-        # Just plot strategy then return
         plt.figure(figsize=(10, 6))
         plt.plot(equity_curve.index, equity_curve, label=f"{ticker} Strategy")
         plt.title(f"Single-Ticker Strategy vs. Buy & Hold: {ticker}")

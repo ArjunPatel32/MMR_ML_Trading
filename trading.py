@@ -28,7 +28,7 @@ def build_feature_matrix(price_data, momentum_df, zscore_df, vol_window=20):
     daily_returns = price_data.pct_change()
 
     # rolling volatility (mean across all tickers)
-    #20-day rolling std, then average across tickers
+    # 20-day rolling std, then average across tickers
     rolling_volatility = daily_returns.rolling(vol_window).std().mean(axis=1)
 
     # rolling average of daily returns (20-day), across all tickers
@@ -50,22 +50,50 @@ def build_feature_matrix(price_data, momentum_df, zscore_df, vol_window=20):
 
 def track_strategy_chosen_signals(price_data, final_signals, spy_series, initial_capital=10000.0):
     """
-    A simplified version that just invests (equally) in whichever signals are 'on' each day.
+    Tracks the cumulative returns of a trading strategy based on generated signals 
+    and compares its performance against two benchmarks:
+      1. SPY buy-and-hold
+      2. An equally weighted buy-and-hold portfolio across all tickers in price_data
+
+    On any given day, only tickers with available price data on the start date are used 
+    for the equally weighted portfolio.
     """
-    # daily returns
+
+    # Compute daily returns (signal on day t gets the return from day t+1)
     daily_returns = price_data.pct_change().shift(-1).fillna(0)
 
-    # strategy returns
+    # Compute the strategy's cumulative returns
     combined = (final_signals * daily_returns).mean(axis=1)  # average across all tickers signaled
     strategy_cumulative = (1 + combined).cumprod() * initial_capital
 
-    # SPY buy-hold
+    # Compute the SPY buy-and-hold equity curve
     spy_aligned = spy_series.loc[strategy_cumulative.index].ffill()
     first_spy_price = spy_aligned.iloc[0]
     spy_cumulative = (spy_aligned / first_spy_price) * initial_capital
 
+    # Compute the equally weighted buy-and-hold portfolio
+    # Identify the start date and the tickers with a valid price at that time.
+    start_date = price_data.index[0]
+    valid_tickers = [ticker for ticker in price_data.columns if pd.notna(price_data.loc[start_date, ticker])]
+    
+    if valid_tickers:
+        allocation = initial_capital / len(valid_tickers)
+        eq_curves = {}
+        for ticker in valid_tickers:
+            init_price = price_data.loc[start_date, ticker]
+            # Compute the buy-and-hold equity curve for this ticker
+            eq_curves[ticker] = allocation * (price_data[ticker] / init_price)
+        # Sum the individual equity curves to get the portfolio value
+        equal_weight_buy_hold = pd.DataFrame(eq_curves).sum(axis=1)
+    else:
+        # In the unlikely event that no ticker has a valid start price, set the portfolio to zero.
+        equal_weight_buy_hold = pd.Series(0, index=strategy_cumulative.index)
+
+    # Combine all three equity curves into a single DataFrame.
     result_df = pd.DataFrame({
         'Strategy': strategy_cumulative,
-        'SPY_BuyHold': spy_cumulative
+        'SPY_BuyHold': spy_cumulative,
+        'EqualWeight_BuyHold': equal_weight_buy_hold
     }, index=strategy_cumulative.index)
+    
     return result_df

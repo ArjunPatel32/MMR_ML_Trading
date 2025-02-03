@@ -1,6 +1,5 @@
 # computing.py
 
-import pandas as pd
 import numpy as np
 
 def compute_momentum(data, window=126):
@@ -9,13 +8,13 @@ def compute_momentum(data, window=126):
     """
     return data.pct_change(periods=window)
 
-def compute_mean_reversion(data, short_window=5, long_window=20):
+def compute_mean_reversion(data, window=20):
     """
     Compute mean reversion signals using z-scores.
     """
     # Calculate rolling mean and standard deviation
-    rolling_mean = data.rolling(window=long_window).mean()
-    rolling_std = data.rolling(window=long_window).std()
+    rolling_mean = data.rolling(window=window).mean()
+    rolling_std = data.rolling(window=window).std()
 
     # Calculate z-score
     z_score = (data - rolling_mean) / rolling_std
@@ -33,7 +32,7 @@ def compute_signal_returns(data, signal_df):
     daily_returns = data.pct_change().shift(-1)  # shift(-1) so day t signal sees day t+1 return
 
     # If signal is +1 and daily_return is r, that's +r. If -1, it's -r. If 0, it's 0.
-    # Then we can average across tickers that are "active."
+    # Average across "active" tickers
     combined = (signal_df * daily_returns)
 
     # equal-weight average of all active signals:
@@ -41,6 +40,6 @@ def compute_signal_returns(data, signal_df):
     combined['count'] = (signal_df != 0).sum(axis=1).replace(0, np.nan)
     combined['strategy_return'] = combined['sum'] / combined['count']
 
-    # That gives a daily strategy return for each day.
+    # That gives daily strategy return for each day.
     # per-day return:
     return combined['strategy_return'].fillna(0.0)

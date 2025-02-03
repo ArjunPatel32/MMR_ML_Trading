@@ -13,7 +13,7 @@ def generate_signals_momentum(momentum_df, threshold=0.05):
 
     return signals
 
-def generate_signals_meanreversion(zscore_df, z_entry=1.0, z_exit=0.0):
+def generate_signals_meanreversion(zscore_df, z_entry=1.0):
     """
     Returns a +1 (long) signal if zscore < -z_entry,
            a -1 (short) signal if zscore > z_entry,
@@ -26,12 +26,7 @@ def generate_signals_meanreversion(zscore_df, z_entry=1.0, z_exit=0.0):
     signals[zscore_df > z_entry] = -1
     return signals
 
-def generate_final_signal(
-    clf,
-    features,
-    momentum_signals,
-    meanrev_signals
-):
+def generate_final_signal(clf, features, momentum_signals, meanrev_signals):
     """
     For each day, if clf predicts 1 -> use momentum_signals,
                      if clf predicts 0 -> use meanrev_signals.
