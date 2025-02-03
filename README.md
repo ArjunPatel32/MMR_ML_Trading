@@ -12,3 +12,4 @@ Project by Arjun Patel
 TODO:
 - implement transaction fees
 - random sample of companies in S&P
+- able to change the start date to before a stock went public and still works
