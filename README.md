@@ -8,8 +8,12 @@ Project by Arjun Patel
 - At run‐time, pick the signals from the approach the model favors.
 - Apply stop-loss risk management to the signals
 - Compare to holding the S&P 500 and holding an equal portfolio across all tickers.
+- Run simulations of random stocks with strategy
 
 TODO:
 - implement transaction fees
-- random sample of companies in S&P
-- able to change the start date to before a stock went public and still works
+
+
+REFERENCES
+- https://github.com/fja05680/sp500 (SPY_500_historical_stocks.csv)
+
