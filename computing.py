@@ -6,7 +6,7 @@ def compute_momentum(data, window=126):
     """
     Compute momentum as the percentage change over a given window.
     """
-    return data.pct_change(periods=window)
+    return data.pct_change(periods=window, fill_method='pad')
 
 def compute_mean_reversion(data, window=20):
     """
@@ -40,6 +40,5 @@ def compute_signal_returns(data, signal_df):
     combined['count'] = (signal_df != 0).sum(axis=1).replace(0, np.nan)
     combined['strategy_return'] = combined['sum'] / combined['count']
 
-    # That gives daily strategy return for each day.
     # per-day return:
     return combined['strategy_return'].fillna(0.0)

@@ -26,7 +26,7 @@ def build_feature_matrix(price_data, momentum_df, zscore_df, vol_window=20):
     vol_window: int, rolling window for volatility
     """
     # daily returns
-    daily_returns = price_data.pct_change()
+    daily_returns = price_data.pct_change(fill_method='pad')
 
     # rolling volatility (mean across all tickers)
     # 20-day rolling std, then average across tickers

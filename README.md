@@ -12,8 +12,6 @@ Project by Arjun Patel
 
 TODO:
 - implement transaction fees
-- test using SPY in 2015
-- make sure stop loss risk working (only trade at close?)
 
 
 REFERENCES
