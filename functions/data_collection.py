@@ -45,7 +45,7 @@ def get_current_sp500_ticker_sample(n=10, seed=None):
     
     return list(sample_tickers)
 
-def get_sp500_data_in_date_range(start_date, end_date, data_csv="SPY_500_data.csv", composition_csv="SPY_500_historical_stocks.csv"):
+def get_sp500_data_in_date_range(start_date, end_date, data_csv="data/SPY_500_data.csv", composition_csv="data/SPY_500_historical_stocks.csv"):
     """
     Gets historical closing price data for the S&P 500 companies based on the composition
     at the given start_date. If the data CSV already exists and covers the requested date range,
