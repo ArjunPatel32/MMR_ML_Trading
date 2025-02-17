@@ -10,9 +10,6 @@ Project by Arjun Patel
 - Compare to holding the S&P 500 and holding an equal portfolio across all tickers.
 - Run simulations of random stocks with strategy
 
-TODO:
-- implement transaction fees
-
 
 REFERENCES
 - https://github.com/fja05680/sp500 (SPY_500_historical_stocks.csv)
